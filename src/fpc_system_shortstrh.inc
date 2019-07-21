@@ -20,80 +20,38 @@
   Temple Place, Suite 330, Boston, MA 02111-1307, USA. Ou acesse o site do
   GNU e obtenha sua licenca: http://www.gnu.org/
 ============================================================================
-  Unit System.pas
+  Unit System.pas (fpc_system_shortstrh.inc)
   --------------------------------------------------------------------------
   Unit principal do compilador, crosscompiler, que substitui a RTL normal.
   --------------------------------------------------------------------------
-  Criado em: 29/04/2013
+  Criado em: 21/07/2019
   --------------------------------------------------------------------------
-  Compilar: Compilavel FPC
-  > fpc system.pas
+  Compilar: Nao compilavel; Arquivo INC utilizado pela Unit System.
   ------------------------------------------------------------------------
-  Executar: Nao executavel diretamente; Unit.
+  Executar: Nao executavel diretamente;
 ===========================================================================}
 
-unit System;
+  procedure fpc_shortstr_assign(Len : LongInt; SSrc, SDest : Pointer);
+    register; compilerproc;
 
-{$mode objfpc} // Obrigatorio por usar out-parameters
+  function fpc_shortstr_compare_equal(const StrLeft, StrRight : ShortString) : LongInt;
+    register; compilerproc;
 
-interface
+  procedure fpc_shortstr_concat(var DestStr : ShortString; const Src1, Src2 : ShortString);
+    register; compilerproc;
 
-type
-  HResult = LongWord; // Obrigatorio
+  procedure fpc_shortstr_concat_multi(var DestStr : ShortString; const SrcArr : array of PShortString);
+    register; compilerproc;
 
-  // Tamanhos automatizados (maximos da arquitetura)
-  SInt = LongInt; // Inteiro com sinal
-  UInt = LongWord; // Inteiro sem sinal
+  procedure fpc_shortstr_to_shortstr(out Res: ShortString; const SSrc: ShortString);
+    register; compilerproc;
 
-  TUIntPtr = UInt; // Equivalente inteiro de ponteiro
+  procedure fpc_chararray_to_shortstr(out Res : ShortString;
+    const Arr: array of char; ZeroBased : Boolean = true);
+    register; compilerproc;
 
-  DWord = LongWord;
+  procedure fpc_pchar_to_shortstr(out Res : ShortString; P : PChar);
+    register; compilerproc;
 
-  PByte = ^Byte;
-  PWord = ^Word;
-  PDWord = ^DWord;
-
-  PChar = ^Char;
-  PShortString = ^ShortString;
-
-
-const
-  MaxByte = $FF;
-  MaxShortInt = $7F;
-
-  MaxWord = $FFFF;
-  MaxSmallInt = $7FFF;
-
-  MaxLongWord = $FFFFFFFF;
-  MaxLongInt = $7FFFFFFF;
-
-  MaxInt = MaxLongInt;
-  MaxUInt = MaxLongWord;
-  MaxSInt = MaxLongInt;
-
-
-  {$I FPC_SYSTEM_EXTERNAL.INC}
-
-  {$I FPC_SYSTEM_GENERALH.INC}
-  {$I FPC_SYSTEM_INTEGERH.INC}
-  {$I FPC_SYSTEM_SHORTSTRH.INC}
-  {$I FPC_SYSTEM_PCHARH.INC}
-
-
-implementation
-
-  {$I FPC_SYSTEM_GENERALF.INC}
-  {$I FPC_SYSTEM_ERRORMANAGERF.INC}
-  {$I FPC_SYSTEM_SHORTSTRF.INC}
-
-  {$I FPC_SYSTEM_GENERAL.INC}
-  {$I FPC_SYSTEM_INTEGER.INC}
-  {$I FPC_SYSTEM_SHORTSTR.INC}
-  {$I FPC_SYSTEM_PCHAR.INC}
-  {$I FPC_SYSTEM_ERRORMANAGER.INC}
-
-
-end.
-
-
-
+  function fpc_val_sint_shortstr(DestSize : LongInt; const S : ShortString;
+    out Error : LongInt) : LongInt; register; compilerproc;

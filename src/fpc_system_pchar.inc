@@ -20,80 +20,29 @@
   Temple Place, Suite 330, Boston, MA 02111-1307, USA. Ou acesse o site do
   GNU e obtenha sua licenca: http://www.gnu.org/
 ============================================================================
-  Unit System.pas
+  Unit System.pas (fpc_system_pchar.inc)
   --------------------------------------------------------------------------
   Unit principal do compilador, crosscompiler, que substitui a RTL normal.
   --------------------------------------------------------------------------
-  Criado em: 29/04/2013
+  Criado em: 21/07/2019
   --------------------------------------------------------------------------
-  Compilar: Compilavel FPC
-  > fpc system.pas
+  Compilar: Nao compilavel; Arquivo INC utilizado pela Unit System.
   ------------------------------------------------------------------------
-  Executar: Nao executavel diretamente; Unit.
+  Executar: Nao executavel diretamente;
 ===========================================================================}
 
-unit System;
+function fpc_pchar_length(P : PChar) : LongInt; compilerproc;
+  alias : 'FPC_PCHAR_LENGTH';
 
-{$mode objfpc} // Obrigatorio por usar out-parameters
+var
+  I : LongInt;
 
-interface
+begin
+  I := 0;
 
-type
-  HResult = LongWord; // Obrigatorio
+  if Assigned(P) then
+    while (P[I] <> #0) do
+      Inc(I);
 
-  // Tamanhos automatizados (maximos da arquitetura)
-  SInt = LongInt; // Inteiro com sinal
-  UInt = LongWord; // Inteiro sem sinal
-
-  TUIntPtr = UInt; // Equivalente inteiro de ponteiro
-
-  DWord = LongWord;
-
-  PByte = ^Byte;
-  PWord = ^Word;
-  PDWord = ^DWord;
-
-  PChar = ^Char;
-  PShortString = ^ShortString;
-
-
-const
-  MaxByte = $FF;
-  MaxShortInt = $7F;
-
-  MaxWord = $FFFF;
-  MaxSmallInt = $7FFF;
-
-  MaxLongWord = $FFFFFFFF;
-  MaxLongInt = $7FFFFFFF;
-
-  MaxInt = MaxLongInt;
-  MaxUInt = MaxLongWord;
-  MaxSInt = MaxLongInt;
-
-
-  {$I FPC_SYSTEM_EXTERNAL.INC}
-
-  {$I FPC_SYSTEM_GENERALH.INC}
-  {$I FPC_SYSTEM_INTEGERH.INC}
-  {$I FPC_SYSTEM_SHORTSTRH.INC}
-  {$I FPC_SYSTEM_PCHARH.INC}
-
-
-implementation
-
-  {$I FPC_SYSTEM_GENERALF.INC}
-  {$I FPC_SYSTEM_ERRORMANAGERF.INC}
-  {$I FPC_SYSTEM_SHORTSTRF.INC}
-
-  {$I FPC_SYSTEM_GENERAL.INC}
-  {$I FPC_SYSTEM_INTEGER.INC}
-  {$I FPC_SYSTEM_SHORTSTR.INC}
-  {$I FPC_SYSTEM_PCHAR.INC}
-  {$I FPC_SYSTEM_ERRORMANAGER.INC}
-
-
-end.
-
-
-
+  fpc_pchar_length := I;
+end;

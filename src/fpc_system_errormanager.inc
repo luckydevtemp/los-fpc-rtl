@@ -20,80 +20,52 @@
   Temple Place, Suite 330, Boston, MA 02111-1307, USA. Ou acesse o site do
   GNU e obtenha sua licenca: http://www.gnu.org/
 ============================================================================
-  Unit System.pas
+  Unit System.pas (fpc_system_errormanager.inc)
   --------------------------------------------------------------------------
   Unit principal do compilador, crosscompiler, que substitui a RTL normal.
   --------------------------------------------------------------------------
-  Criado em: 29/04/2013
+  Criado em: 21/07/2019
   --------------------------------------------------------------------------
-  Compilar: Compilavel FPC
-  > fpc system.pas
+  Compilar: Nao compilavel; Arquivo INC utilizado pela Unit System.
   ------------------------------------------------------------------------
-  Executar: Nao executavel diretamente; Unit.
+  Executar: Nao executavel diretamente;
 ===========================================================================}
 
-unit System;
+procedure HandleErrorFrame (ErrNo : Longint; Frame : Pointer);
+begin
+  HandleErrorAddrFrame(ErrNo, get_caller_addr(Frame), get_caller_frame(Frame));
+end;
 
-{$mode objfpc} // Obrigatorio por usar out-parameters
+procedure HandleErrorAddrFrame (ErrNo : LongInt; Addr, Frame : Pointer); register; public;
+  alias: 'FPC_BREAK_ERROR';
 
-interface
+begin
+  if Assigned(ErrorProc) then
+    ErrorProc(ErrNo, Addr, Frame);
 
-type
-  HResult = LongWord; // Obrigatorio
+  ErrorCode := Word(ErrNo);
+  ErrorAddr := Addr;
+  ErrorBase := Frame;
 
-  // Tamanhos automatizados (maximos da arquitetura)
-  SInt = LongInt; // Inteiro com sinal
-  UInt = LongWord; // Inteiro sem sinal
+  Halt(ErrorCode);
+end;
 
-  TUIntPtr = UInt; // Equivalente inteiro de ponteiro
+function get_caller_addr(FrameBP : Pointer): Pointer; nostackframe; register; assembler;
+asm
+//  mov eax, [FrameBP]
 
-  DWord = LongWord;
+  or    eax, eax
+  jz    @isnull
+  mov   eax, [eax+4]
+@isnull:
+end;
 
-  PByte = ^Byte;
-  PWord = ^Word;
-  PDWord = ^DWord;
+function get_caller_frame(FrameBP : Pointer): Pointer; register; assembler;
+asm
+//  mov eax, [FrameBP]
 
-  PChar = ^Char;
-  PShortString = ^ShortString;
-
-
-const
-  MaxByte = $FF;
-  MaxShortInt = $7F;
-
-  MaxWord = $FFFF;
-  MaxSmallInt = $7FFF;
-
-  MaxLongWord = $FFFFFFFF;
-  MaxLongInt = $7FFFFFFF;
-
-  MaxInt = MaxLongInt;
-  MaxUInt = MaxLongWord;
-  MaxSInt = MaxLongInt;
-
-
-  {$I FPC_SYSTEM_EXTERNAL.INC}
-
-  {$I FPC_SYSTEM_GENERALH.INC}
-  {$I FPC_SYSTEM_INTEGERH.INC}
-  {$I FPC_SYSTEM_SHORTSTRH.INC}
-  {$I FPC_SYSTEM_PCHARH.INC}
-
-
-implementation
-
-  {$I FPC_SYSTEM_GENERALF.INC}
-  {$I FPC_SYSTEM_ERRORMANAGERF.INC}
-  {$I FPC_SYSTEM_SHORTSTRF.INC}
-
-  {$I FPC_SYSTEM_GENERAL.INC}
-  {$I FPC_SYSTEM_INTEGER.INC}
-  {$I FPC_SYSTEM_SHORTSTR.INC}
-  {$I FPC_SYSTEM_PCHAR.INC}
-  {$I FPC_SYSTEM_ERRORMANAGER.INC}
-
-
-end.
-
-
-
+  or    eax, eax
+  jz    @isnull
+  mov   eax, [eax]
+@isnull:
+end;

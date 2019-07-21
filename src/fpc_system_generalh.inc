@@ -20,80 +20,31 @@
   Temple Place, Suite 330, Boston, MA 02111-1307, USA. Ou acesse o site do
   GNU e obtenha sua licenca: http://www.gnu.org/
 ============================================================================
-  Unit System.pas
+  Unit System.pas (fpc_system_generalh.inc)
   --------------------------------------------------------------------------
   Unit principal do compilador, crosscompiler, que substitui a RTL normal.
   --------------------------------------------------------------------------
-  Criado em: 29/04/2013
+  Criado em: 21/07/2019
   --------------------------------------------------------------------------
-  Compilar: Compilavel FPC
-  > fpc system.pas
+  Compilar: Nao compilavel; Arquivo INC utilizado pela Unit System.
   ------------------------------------------------------------------------
-  Executar: Nao executavel diretamente; Unit.
+  Executar: Nao executavel diretamente;
 ===========================================================================}
 
-unit System;
+  procedure Move(const Src; var Dest; Count : LongInt);
+  function CompareByte(const Buff1, Buff2; Len : LongInt) : LongInt;
 
-{$mode objfpc} // Obrigatorio por usar out-parameters
+  procedure FillChar(var X; Count : LongInt; Value : Char);
+  procedure FillByte(var X; Count : LongInt; Value : Byte);
+  procedure FillWord(var X; Count : LongInt; Value : Word);
+  procedure FillDWord(var X; Count : LongInt; Value : DWord);
 
-interface
+  procedure Halt(ErrorNo : LongInt);
+  procedure Halt; inline;
 
-type
-  HResult = LongWord; // Obrigatorio
-
-  // Tamanhos automatizados (maximos da arquitetura)
-  SInt = LongInt; // Inteiro com sinal
-  UInt = LongWord; // Inteiro sem sinal
-
-  TUIntPtr = UInt; // Equivalente inteiro de ponteiro
-
-  DWord = LongWord;
-
-  PByte = ^Byte;
-  PWord = ^Word;
-  PDWord = ^DWord;
-
-  PChar = ^Char;
-  PShortString = ^ShortString;
+  function  Pos(const SubStr, SrcStr : ShortString) : Byte;
+  function  Pos(C : Char; const Source : ShortString) : Byte;
 
 
-const
-  MaxByte = $FF;
-  MaxShortInt = $7F;
-
-  MaxWord = $FFFF;
-  MaxSmallInt = $7FFF;
-
-  MaxLongWord = $FFFFFFFF;
-  MaxLongInt = $7FFFFFFF;
-
-  MaxInt = MaxLongInt;
-  MaxUInt = MaxLongWord;
-  MaxSInt = MaxLongInt;
-
-
-  {$I FPC_SYSTEM_EXTERNAL.INC}
-
-  {$I FPC_SYSTEM_GENERALH.INC}
-  {$I FPC_SYSTEM_INTEGERH.INC}
-  {$I FPC_SYSTEM_SHORTSTRH.INC}
-  {$I FPC_SYSTEM_PCHARH.INC}
-
-
-implementation
-
-  {$I FPC_SYSTEM_GENERALF.INC}
-  {$I FPC_SYSTEM_ERRORMANAGERF.INC}
-  {$I FPC_SYSTEM_SHORTSTRF.INC}
-
-  {$I FPC_SYSTEM_GENERAL.INC}
-  {$I FPC_SYSTEM_INTEGER.INC}
-  {$I FPC_SYSTEM_SHORTSTR.INC}
-  {$I FPC_SYSTEM_PCHAR.INC}
-  {$I FPC_SYSTEM_ERRORMANAGER.INC}
-
-
-end.
-
-
-
+var
+  ExitCode : Longint; public name 'operatingsystem_result';

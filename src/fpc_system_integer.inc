@@ -20,80 +20,95 @@
   Temple Place, Suite 330, Boston, MA 02111-1307, USA. Ou acesse o site do
   GNU e obtenha sua licenca: http://www.gnu.org/
 ============================================================================
-  Unit System.pas
+  Unit System.pas (fpc_system_integer.inc)
   --------------------------------------------------------------------------
   Unit principal do compilador, crosscompiler, que substitui a RTL normal.
   --------------------------------------------------------------------------
-  Criado em: 29/04/2013
+  Criado em: 21/07/2019
   --------------------------------------------------------------------------
-  Compilar: Compilavel FPC
-  > fpc system.pas
+  Compilar: Nao compilavel; Arquivo INC utilizado pela Unit System.
   ------------------------------------------------------------------------
-  Executar: Nao executavel diretamente; Unit.
+  Executar: Nao executavel diretamente;
 ===========================================================================}
 
-unit System;
+function fpc_mul_qword(V1, V2 : QWord; CheckOverflow : Longbool) : QWord; compilerproc;
+  alias: 'FPC_MUL_QWORD';
+var
+  ResultOld, BitPos : QWord;
+  V1Over : Boolean;
+  B : Byte;
 
-{$mode objfpc} // Obrigatorio por usar out-parameters
+begin
+  Result := 0;
+  BitPos := 1;
+  V1Over := False;
 
-interface
+  for B := 0 to 63 do
+  begin
+    // Testa cada posicao de V2
+    if ((V2 and BitPos) <> 0) then
+    begin
+      ResultOld := Result;
+      Result := Result + V1;
 
-type
-  HResult = LongWord; // Obrigatorio
+      if CheckOverflow and
+        (V1Over or
+          ((V1 <> 0) and (ResultOld <> 0) and
+            ((Result < V1) or (Result < ResultOld))
+          )
+        )
+      then
+        HandleErrorFrame(215, get_frame);
+    end;
 
-  // Tamanhos automatizados (maximos da arquitetura)
-  SInt = LongInt; // Inteiro com sinal
-  UInt = LongWord; // Inteiro sem sinal
+    // Testa bit 63 = 1
+    V1Over := V1Over or ((V1 and (1 shl 63)) <> 0);
 
-  TUIntPtr = UInt; // Equivalente inteiro de ponteiro
-
-  DWord = LongWord;
-
-  PByte = ^Byte;
-  PWord = ^Word;
-  PDWord = ^DWord;
-
-  PChar = ^Char;
-  PShortString = ^ShortString;
-
-
-const
-  MaxByte = $FF;
-  MaxShortInt = $7F;
-
-  MaxWord = $FFFF;
-  MaxSmallInt = $7FFF;
-
-  MaxLongWord = $FFFFFFFF;
-  MaxLongInt = $7FFFFFFF;
-
-  MaxInt = MaxLongInt;
-  MaxUInt = MaxLongWord;
-  MaxSInt = MaxLongInt;
-
-
-  {$I FPC_SYSTEM_EXTERNAL.INC}
-
-  {$I FPC_SYSTEM_GENERALH.INC}
-  {$I FPC_SYSTEM_INTEGERH.INC}
-  {$I FPC_SYSTEM_SHORTSTRH.INC}
-  {$I FPC_SYSTEM_PCHARH.INC}
+    V1 := V1 shl 1;
+    BitPos := BitPos shl 1;
+  end;
+end;
 
 
-implementation
+function fpc_mul_int64(V1, V2 : Int64; CheckOverflow : Longbool) : Int64; compilerproc;
+  alias: 'FPC_MUL_INT64';
+var
+  Negative : Boolean;
+  Q1, Q2, Q3 : QWord;
 
-  {$I FPC_SYSTEM_GENERALF.INC}
-  {$I FPC_SYSTEM_ERRORMANAGERF.INC}
-  {$I FPC_SYSTEM_SHORTSTRF.INC}
+begin
+  if (V1 < 0) then
+  begin
+    Negative := True;
+    Q1 := QWord(-V1);
+  end
+  else
+  begin
+    Negative := False;
+    Q1 := QWord(V1);
+  end;
 
-  {$I FPC_SYSTEM_GENERAL.INC}
-  {$I FPC_SYSTEM_INTEGER.INC}
-  {$I FPC_SYSTEM_SHORTSTR.INC}
-  {$I FPC_SYSTEM_PCHAR.INC}
-  {$I FPC_SYSTEM_ERRORMANAGER.INC}
+  if (V2 < 0) then
+  begin
+    Negative := not Negative;
+    Q2 := QWord(-V2);
+  end
+  else
+    Q2 := QWord(V2);
 
+  // Q1 * Q2 como mulqword
+  Q3 := Q1 * Q2;
 
-end.
+  if CheckOverflow and (Q1 <> 0) and (Q2 <> 0) and
+    ((Q1 > Q3) or
+     (Q2 > Q3) or
+     ((Q3 shr 63) <> 0) and ((Q3 <> (1 shl 63)) or not Negative)
+    )
+  then
+    HandleErrorFrame(215, get_frame);
 
-
-
+  if Negative then
+    fpc_mul_int64 := -Q3
+  else
+    fpc_mul_int64 := Q3;
+end;

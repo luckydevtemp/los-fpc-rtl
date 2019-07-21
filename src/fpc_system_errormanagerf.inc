@@ -20,80 +20,28 @@
   Temple Place, Suite 330, Boston, MA 02111-1307, USA. Ou acesse o site do
   GNU e obtenha sua licenca: http://www.gnu.org/
 ============================================================================
-  Unit System.pas
+  Unit System.pas (fpc_system_errormanagerf.inc)
   --------------------------------------------------------------------------
   Unit principal do compilador, crosscompiler, que substitui a RTL normal.
   --------------------------------------------------------------------------
-  Criado em: 29/04/2013
+  Criado em: 21/07/2019
   --------------------------------------------------------------------------
-  Compilar: Compilavel FPC
-  > fpc system.pas
+  Compilar: Nao compilavel; Arquivo INC utilizado pela Unit System.
   ------------------------------------------------------------------------
-  Executar: Nao executavel diretamente; Unit.
+  Executar: Nao executavel diretamente;
 ===========================================================================}
 
-unit System;
-
-{$mode objfpc} // Obrigatorio por usar out-parameters
-
-interface
-
 type
-  HResult = LongWord; // Obrigatorio
-
-  // Tamanhos automatizados (maximos da arquitetura)
-  SInt = LongInt; // Inteiro com sinal
-  UInt = LongWord; // Inteiro sem sinal
-
-  TUIntPtr = UInt; // Equivalente inteiro de ponteiro
-
-  DWord = LongWord;
-
-  PByte = ^Byte;
-  PWord = ^Word;
-  PDWord = ^DWord;
-
-  PChar = ^Char;
-  PShortString = ^ShortString;
-
+  TErrorProc = procedure (ErrorNo : LongInt; Address, Frame : Pointer);
 
 const
-  MaxByte = $FF;
-  MaxShortInt = $7F;
+  ErrorProc : TErrorProc = nil;
+  ErrorCode : Word = 0;
+  ErrorAddr : Pointer = nil;
+  ErrorBase : Pointer = nil;
 
-  MaxWord = $FFFF;
-  MaxSmallInt = $7FFF;
+  procedure HandleErrorFrame (ErrNo : LongInt; Frame : Pointer); forward;
+  procedure HandleErrorAddrFrame (ErrNo : LongInt; Addr, Frame : Pointer); register; forward;
 
-  MaxLongWord = $FFFFFFFF;
-  MaxLongInt = $7FFFFFFF;
-
-  MaxInt = MaxLongInt;
-  MaxUInt = MaxLongWord;
-  MaxSInt = MaxLongInt;
-
-
-  {$I FPC_SYSTEM_EXTERNAL.INC}
-
-  {$I FPC_SYSTEM_GENERALH.INC}
-  {$I FPC_SYSTEM_INTEGERH.INC}
-  {$I FPC_SYSTEM_SHORTSTRH.INC}
-  {$I FPC_SYSTEM_PCHARH.INC}
-
-
-implementation
-
-  {$I FPC_SYSTEM_GENERALF.INC}
-  {$I FPC_SYSTEM_ERRORMANAGERF.INC}
-  {$I FPC_SYSTEM_SHORTSTRF.INC}
-
-  {$I FPC_SYSTEM_GENERAL.INC}
-  {$I FPC_SYSTEM_INTEGER.INC}
-  {$I FPC_SYSTEM_SHORTSTR.INC}
-  {$I FPC_SYSTEM_PCHAR.INC}
-  {$I FPC_SYSTEM_ERRORMANAGER.INC}
-
-
-end.
-
-
-
+  function get_caller_addr(FrameBP : Pointer): Pointer; register; forward;
+  function get_caller_frame(FrameBP : Pointer): Pointer; register; forward;
